@@ -33,6 +33,7 @@ Look at the orveloard UI look at the indexing log
 Look at the coordinator UI look at the load status
 
 # Query the data 
+http://druid.io/docs/0.10.1/querying/querying.html
 
 ## Time Boundary
 wget https://transfer.sh/wzxR2/timeBoundary.json
@@ -43,7 +44,8 @@ https://transfer.sh/Ta26s/topN.json
 curl -X POST "ctr-e134-1499953498516-247377-01-000002.hwx.site:8888/druid/v2/?pretty" -H 'content-type: application/json' -d@topN.json
 
 ## Practice 
-write/run your own query using druid select query help page 
+write/run your own query using druid group by query help page 
+http://druid.io/docs/0.10.1/querying/groupbyquery.html
 
 # SuperSet UI
 Via Ambari UI Go to Superset and create some simple slice
