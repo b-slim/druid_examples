@@ -1,8 +1,3 @@
-
-# Setup data
-
-run this from your teminal 
-
 # Node status
 via Curl
 ```sh
@@ -10,6 +5,8 @@ curl localhost:8082/status
 {"version":"0.10.1.2.6.3.0-220","modules":[{"name":"io.druid.query.aggregation.datasketches.theta.SketchModule","artifact":"druid-datasketches","version":"0.10.1.2.6.3.0-220"},{"name":"io.druid.query.aggregation.datasketches.theta.oldapi.OldApiSketchModule","artifact":"druid-datasketches","version":"0.10.1.2.6.3.0-220"},{"name":"io.druid.storage.hdfs.HdfsStorageDruidModule","artifact":"druid-hdfs-storage","version":"0.10.1.2.6.3.0-220"},{"name":"io.druid.indexing.kafka.KafkaIndexTaskModule","artifact":"druid-kafka-indexing-service","version":"0.10.1.2.6.3.0-220"},{"name":"io.druid.metadata.storage.mysql.MySQLMetadataStorageModule","artifact":"mysql-metadata-storage","version":"0.10.1.2.6.3.0-220"},{"name":"io.druid.emitter.ambari.metrics.AmbariMetricsEmitterModule","artifact":"ambari-metrics-emitter","version":"0.10.1.2.6.3.0-220"}],"memory":{"maxMemory":2058354688,"totalMemory":2058354688,"freeMemory":1727201736,"usedMemory":331152952}}
 
 ```
+
+# Setup data
 
 sudo su druid
 wget https://transfer.sh/sWgBK/wikiticker-2015-09-12-sampled.json.gz
@@ -41,6 +38,7 @@ Look at the coordinator UI look at the load status
 wget https://transfer.sh/wzxR2/timeBoundary.json
 curl -X POST "ctr-e134-1499953498516-247377-01-000002.hwx.site:8888/druid/v2/?pretty" -H 'content-type: application/json' -d@timeBoundary.json
 
+## TopN
 https://transfer.sh/Ta26s/topN.json
 curl -X POST "ctr-e134-1499953498516-247377-01-000002.hwx.site:8888/druid/v2/?pretty" -H 'content-type: application/json' -d@topN.json
 
