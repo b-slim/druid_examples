@@ -69,14 +69,45 @@ SELECT COUNT(*), floor_hour(`__time`) FROM wikipedia GROUP BY floor_hour(`__time
 
 
 ## Index more data 
+```sql
+drop table login_hive;
+create table login_hive(`timecolumn` timestamp, `userid` string, `num_l` double);
+insert into login_hive values ('2015-01-01 00:00:00', 'user1', 5);
+insert into login_hive values ('2015-01-01 01:00:00', 'user2', 4);
+insert into login_hive values ('2015-01-01 02:00:00', 'user3', 2);
 
+insert into login_hive values ('2015-01-02 00:00:00', 'user1', 1);
+insert into login_hive values ('2015-01-02 01:00:00', 'user2', 2);
+insert into login_hive values ('2015-01-02 02:00:00', 'user3', 8);
+
+insert into login_hive values ('2015-01-03 00:00:00', 'user1', 5);
+insert into login_hive values ('2015-01-03 01:00:00', 'user2', 9);
+insert into login_hive values ('2015-01-03 04:00:00', 'user3', 2);
+
+insert into login_hive values ('2015-03-09 00:00:00', 'user3', 5);
+insert into login_hive values ('2015-03-09 01:00:00', 'user1', 0);
+insert into login_hive values ('2015-03-09 05:00:00', 'user2', 0);
+
+
+drop table login_druid;
+CREATE TABLE login_druid
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY", "druid.query.granularity" = "HOUR")
+AS
+select `timecolumn` as `__time`, `userid`, `num_l` FROM login_hive;
+
+```
 
 ## Query the data 
-
+``` sql
+select * FROM login_druid;
+```
 
 
 # Delete the data source 
-
+```sql
+drop table login_druid;
+```
 
 # Msc commands
 to kill yarn app
