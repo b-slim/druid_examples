@@ -369,6 +369,290 @@ Query fails because of resource limit
 ```
 
 
+## Indexing data issue
+### 
+This will show on the coordinator
+```java
+2017-10-26T02:42:04,178 WARN [Coordinator-Exec--0] io.druid.server.coordinator.rules.LoadRule - Not enough [_default_tier] servers or node capacity to assign segment[wiki5_2015-09-01T00:00:00.000Z_2015-10-01T00:00:00.000Z_2017-10-26T02:37:31.038Z]! Expected Replicants[2]
+```
+And this will be printed on the historical
+
+```java
+2017-10-26T02:44:04,251 ERROR [ZkCoordinator-0] io.druid.server.coordination.ZkCoordinator - Failed to load segment for dataSource: {class=io.druid.server.coordination.ZkCoordinator, exceptionType=class io.druid.segment.loading.SegmentLoadingException, exceptionMessage=Exception loading segment[wiki5_2015-09-01T00:00:00.000Z_2015-10-01T00:00:00.000Z_2017-10-26T02:37:31.038Z], segment=DataSegment{size=4354747, shardSpec=NoneShardSpec, metrics=[count, added, deleted, delta], dimensions=[channel, comment, isAnonymous, isMinor, isNew, isRobot, isUnpatrolled, namespace, page, user, cityName, countryIsoCode, countryName, regionIsoCode, regionName, metroCode], version='2017-10-26T02:37:31.038Z', loadSpec={type=hdfs, path=hdfs://ctr-e134-1499953498516-247377-01-000005.hwx.site:8020/apps/druid/warehouse/wiki5/20150901T000000.000Z_20151001T000000.000Z/2017-10-26T02_37_31.038Z/0_index.zip}, interval=2015-09-01T00:00:00.000Z/2015-10-01T00:00:00.000Z, dataSource='wiki5', binaryVersion='9'}}
+io.druid.segment.loading.SegmentLoadingException: Exception loading segment[wiki5_2015-09-01T00:00:00.000Z_2015-10-01T00:00:00.000Z_2017-10-26T02:37:31.038Z]
+        at io.druid.server.coordination.ZkCoordinator.loadSegment(ZkCoordinator.java:327) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.ZkCoordinator.addSegment(ZkCoordinator.java:368) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.SegmentChangeRequestLoad.go(SegmentChangeRequestLoad.java:45) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.ZkCoordinator$1.childEvent(ZkCoordinator.java:158) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache$5.apply(PathChildrenCache.java:522) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache$5.apply(PathChildrenCache.java:516) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.listen.ListenerContainer$1.run(ListenerContainer.java:93) [curator-framework-2.11.0.jar:?]
+        at com.google.common.util.concurrent.MoreExecutors$SameThreadExecutorService.execute(MoreExecutors.java:297) [guava-16.0.1.jar:?]
+        at org.apache.curator.framework.listen.ListenerContainer.forEach(ListenerContainer.java:84) [curator-framework-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache.callListeners(PathChildrenCache.java:513) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.EventOperation.invoke(EventOperation.java:35) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache$9.run(PathChildrenCache.java:773) [curator-recipes-2.11.0.jar:?]
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [?:1.8.0_112]
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266) [?:1.8.0_112]
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [?:1.8.0_112]
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266) [?:1.8.0_112]
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [?:1.8.0_112]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [?:1.8.0_112]
+        at java.lang.Thread.run(Thread.java:745) [?:1.8.0_112]
+Caused by: com.metamx.common.ISE: Segment[wiki5_2015-09-01T00:00:00.000Z_2015-10-01T00:00:00.000Z_2017-10-26T02:37:31.038Z:4,354,747] too large for storage[/apps/druid/segmentCache:-4,354,717].
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.loadSegmentWithRetry(SegmentLoaderLocalCacheManager.java:148) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.getSegmentFiles(SegmentLoaderLocalCacheManager.java:130) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.getSegment(SegmentLoaderLocalCacheManager.java:105) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.SegmentManager.getAdapter(SegmentManager.java:197) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.SegmentManager.loadSegment(SegmentManager.java:158) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.ZkCoordinator.loadSegment(ZkCoordinator.java:323) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        ... 18 more
+```
+
+### Wrong input path
+
+```java
+2017-10-26T03:04:29,302 ERROR [task-runner-0-priority-0] io.druid.indexing.overlord.ThreadPoolTaskRunner - Exception while running task[HadoopIndexTask{id=index_hadoop_wiki5_2017-10-26T03:04:16.829Z, type=index_hadoop, dataSource=wiki5}]
+java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+	at com.google.common.base.Throwables.propagate(Throwables.java:160) ~[guava-16.0.1.jar:?]
+	at io.druid.indexing.common.task.HadoopTask.invokeForeignLoader(HadoopTask.java:218) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexing.common.task.HadoopIndexTask.run(HadoopIndexTask.java:178) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexing.overlord.ThreadPoolTaskRunner$ThreadPoolTaskRunnerCallable.call(ThreadPoolTaskRunner.java:436) [druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexing.overlord.ThreadPoolTaskRunner$ThreadPoolTaskRunnerCallable.call(ThreadPoolTaskRunner.java:408) [druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266) [?:1.8.0_112]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [?:1.8.0_112]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [?:1.8.0_112]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_112]
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_112]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_112]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_112]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_112]
+	at io.druid.indexing.common.task.HadoopTask.invokeForeignLoader(HadoopTask.java:215) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	... 7 more
+Caused by: java.lang.RuntimeException: org.apache.hadoop.mapreduce.lib.input.InvalidInputException: Input path does not exist: hdfs://ctr-e134-1499953498516-247377-01-000005.hwx.site:8020/appsz/druid/warehouse/wikiticker-2015-09-12-sampled.json
+	at com.google.common.base.Throwables.propagate(Throwables.java:160) ~[guava-16.0.1.jar:?]
+	at io.druid.indexer.DetermineHashedPartitionsJob.run(DetermineHashedPartitionsJob.java:210) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexer.JobHelper.runJobs(JobHelper.java:369) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexer.HadoopDruidDetermineConfigurationJob.run(HadoopDruidDetermineConfigurationJob.java:91) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexing.common.task.HadoopIndexTask$HadoopDetermineConfigInnerProcessing.runTask(HadoopIndexTask.java:308) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_112]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_112]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_112]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_112]
+	at io.druid.indexing.common.task.HadoopTask.invokeForeignLoader(HadoopTask.java:215) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	... 7 more
+Caused by: org.apache.hadoop.mapreduce.lib.input.InvalidInputException: Input path does not exist: hdfs://ctr-e134-1499953498516-247377-01-000005.hwx.site:8020/appsz/druid/warehouse/wikiticker-2015-09-12-sampled.json
+	at org.apache.hadoop.mapreduce.lib.input.FileInputFormat.singleThreadedListStatus(FileInputFormat.java:323) ~[?:?]
+	at org.apache.hadoop.mapreduce.lib.input.FileInputFormat.listStatus(FileInputFormat.java:265) ~[?:?]
+	at org.apache.hadoop.mapreduce.lib.input.FileInputFormat.getSplits(FileInputFormat.java:387) ~[?:?]
+	at org.apache.hadoop.mapreduce.lib.input.DelegatingInputFormat.getSplits(DelegatingInputFormat.java:115) ~[?:?]
+	at org.apache.hadoop.mapreduce.JobSubmitter.writeNewSplits(JobSubmitter.java:301) ~[?:?]
+	at org.apache.hadoop.mapreduce.JobSubmitter.writeSplits(JobSubmitter.java:318) ~[?:?]
+	at org.apache.hadoop.mapreduce.JobSubmitter.submitJobInternal(JobSubmitter.java:196) ~[?:?]
+	at org.apache.hadoop.mapreduce.Job$10.run(Job.java:1290) ~[?:?]
+	at org.apache.hadoop.mapreduce.Job$10.run(Job.java:1287) ~[?:?]
+	at java.security.AccessController.doPrivileged(Native Method) ~[?:1.8.0_112]
+	at javax.security.auth.Subject.doAs(Subject.java:422) ~[?:1.8.0_112]
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1866) ~[?:?]
+	at org.apache.hadoop.mapreduce.Job.submit(Job.java:1287) ~[?:?]
+	at io.druid.indexer.DetermineHashedPartitionsJob.run(DetermineHashedPartitionsJob.java:118) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexer.JobHelper.runJobs(JobHelper.java:369) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexer.HadoopDruidDetermineConfigurationJob.run(HadoopDruidDetermineConfigurationJob.java:91) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexing.common.task.HadoopIndexTask$HadoopDetermineConfigInnerProcessing.runTask(HadoopIndexTask.java:308) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_112]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_112]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_112]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_112]
+	at io.druid.indexing.common.task.HadoopTask.invokeForeignLoader(HadoopTask.java:215) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	... 7 more
+```
+
+HDFS access issue when indexing 
+
+```java
+Caused by: java.lang.RuntimeException: org.apache.hadoop.security.AccessControlException: Permission denied: user=druid, access=EXECUTE, inode="/apps/druid/warehouse/wikiticker-2015-09-12-sampled.json":hive:hive:d---rwx---
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.check(FSPermissionChecker.java:353)
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkTraverse(FSPermissionChecker.java:292)
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:238)
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:190)
+	at org.apache.hadoop.hdfs.server.namenode.FSDirectory.checkPermission(FSDirectory.java:1956)
+	at org.apache.hadoop.hdfs.server.namenode.FSDirStatAndListingOp.getFileInfo(FSDirStatAndListingOp.java:108)
+	at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getFileInfo(FSNamesystem.java:4142)
+	at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getFileInfo(NameNodeRpcServer.java:1137)
+	at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getFileInfo(ClientNamenodeProtocolServerSideTranslatorPB.java:866)
+	at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)
+	at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)
+	at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)
+	at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2351)
+	at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2347)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:422)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1866)
+	at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2347)
+
+	at com.google.common.base.Throwables.propagate(Throwables.java:160) ~[guava-16.0.1.jar:?]
+	at io.druid.indexer.DetermineHashedPartitionsJob.run(DetermineHashedPartitionsJob.java:210) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexer.JobHelper.runJobs(JobHelper.java:369) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexer.HadoopDruidDetermineConfigurationJob.run(HadoopDruidDetermineConfigurationJob.java:91) ~[druid-indexing-hadoop-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at io.druid.indexing.common.task.HadoopIndexTask$HadoopDetermineConfigInnerProcessing.runTask(HadoopIndexTask.java:308) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_112]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_112]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_112]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_112]
+	at io.druid.indexing.common.task.HadoopTask.invokeForeignLoader(HadoopTask.java:215) ~[druid-indexing-service-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+	... 7 more
+Caused by: org.apache.hadoop.security.AccessControlException: Permission denied: user=druid, access=EXECUTE, inode="/apps/druid/warehouse/wikiticker-2015-09-12-sampled.json":hive:hive:d---rwx---
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.check(FSPermissionChecker.java:353)
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkTraverse(FSPermissionChecker.java:292)
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:238)
+	at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:190)
+	at org.apache.hadoop.hdfs.server.namenode.FSDirectory.checkPermission(FSDirectory.java:1956)
+	at org.apache.hadoop.hdfs.server.namenode.FSDirStatAndListingOp.getFileInfo(FSDirStatAndListingOp.java:108)
+	at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getFileInfo(FSNamesystem.java:4142)
+	at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getFileInfo(NameNodeRpcServer.java:1137)
+	at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getFileInfo(ClientNamenodeProtocolServerSideTranslatorPB.java:866)
+	at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)
+	at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)
+	at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)
+	at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2351)
+	at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2347)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:422)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1866)
+	at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2347)
+```
+
+### Loading segments from HDFS
+
+```java
+2017-10-26T03:24:05,141 ERROR [ZkCoordinator-0] io.druid.segment.loading.SegmentLoaderLocalCacheManager - Failed to load segment in current location /apps/druid/segmentCache, try next location if any: {class=io.druid.segment.loading.SegmentLoaderLocalCacheManager, exceptionType=class io.druid.segment.loading.SegmentLoadingException, exceptionMessage=Error loadin
+g [hdfs://ctr-e134-1499953498516-247377-01-000005.hwx.site:8020/apps/druid/warehouse/wikipedia/20150912T000000.000Z_20150913T000000.000Z/2017-10-24T15_05_04.692Z/0_index.zip], location=/apps/druid/segmentCache}
+io.druid.segment.loading.SegmentLoadingException: Error loading [hdfs://ctr-e134-1499953498516-247377-01-000005.hwx.site:8020/apps/druid/warehouse/wikipedia/20150912T000000.000Z_20150913T000000.000Z/2017-10-24T15_05_04.692Z/0_index.zip]
+        at io.druid.storage.hdfs.HdfsDataSegmentPuller.getSegmentFiles(HdfsDataSegmentPuller.java:283) ~[?:?]
+        at io.druid.storage.hdfs.HdfsLoadSpec.loadSegment(HdfsLoadSpec.java:62) ~[?:?]
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.loadInLocation(SegmentLoaderLocalCacheManager.java:206) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.loadInLocationWithStartMarker(SegmentLoaderLocalCacheManager.java:195) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.loadSegmentWithRetry(SegmentLoaderLocalCacheManager.java:154) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.getSegmentFiles(SegmentLoaderLocalCacheManager.java:130) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.segment.loading.SegmentLoaderLocalCacheManager.getSegment(SegmentLoaderLocalCacheManager.java:105) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.SegmentManager.getAdapter(SegmentManager.java:197) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.SegmentManager.loadSegment(SegmentManager.java:158) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.ZkCoordinator.loadSegment(ZkCoordinator.java:323) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.ZkCoordinator.addSegment(ZkCoordinator.java:368) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.SegmentChangeRequestLoad.go(SegmentChangeRequestLoad.java:45) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.server.coordination.ZkCoordinator$1.childEvent(ZkCoordinator.java:158) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache$5.apply(PathChildrenCache.java:522) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache$5.apply(PathChildrenCache.java:516) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.listen.ListenerContainer$1.run(ListenerContainer.java:93) [curator-framework-2.11.0.jar:?]
+        at com.google.common.util.concurrent.MoreExecutors$SameThreadExecutorService.execute(MoreExecutors.java:297) [guava-16.0.1.jar:?]
+        at org.apache.curator.framework.listen.ListenerContainer.forEach(ListenerContainer.java:84) [curator-framework-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache.callListeners(PathChildrenCache.java:513) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.EventOperation.invoke(EventOperation.java:35) [curator-recipes-2.11.0.jar:?]
+        at org.apache.curator.framework.recipes.cache.PathChildrenCache$9.run(PathChildrenCache.java:773) [curator-recipes-2.11.0.jar:?]
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [?:1.8.0_112]
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266) [?:1.8.0_112]
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [?:1.8.0_112]
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266) [?:1.8.0_112]
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [?:1.8.0_112]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [?:1.8.0_112]
+        at java.lang.Thread.run(Thread.java:745) [?:1.8.0_112]
+Caused by: org.apache.hadoop.security.AccessControlException: Permission denied: user=druid, access=EXECUTE, inode="/apps/druid/warehouse/wikipedia/20150912T000000.000Z_20150913T000000.000Z/2017-10-24T15_05_04.692Z/0_index.zip":hive:hive:d---rwx---
+        at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.check(FSPermissionChecker.java:353)
+        at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkTraverse(FSPermissionChecker.java:292)
+        at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:238)
+        at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.checkPermission(FSPermissionChecker.java:190)
+        at org.apache.hadoop.hdfs.server.namenode.FSDirectory.checkPermission(FSDirectory.java:1956)
+        at org.apache.hadoop.hdfs.server.namenode.FSDirStatAndListingOp.getFileInfo(FSDirStatAndListingOp.java:108)
+        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getFileInfo(FSNamesystem.java:4142)
+        at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getFileInfo(NameNodeRpcServer.java:1137)
+        at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getFileInfo(ClientNamenodeProtocolServerSideTranslatorPB.java:866)
+        at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)
+        at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)
+        at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)
+        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2351)
+        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2347)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at javax.security.auth.Subject.doAs(Subject.java:422)
+        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1866)
+        at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2347)
+```
+
+### Metadata access issues
+This happens when the database is not created
+```java
+2017-10-26T03:49:16,286 ERROR [main] io.druid.cli.CliCoordinator - Error when starting up.  Failing.
+org.skife.jdbi.v2.exceptions.CallbackFailedException: org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException: com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Tabl
+e 'druid.druid_rules' doesn't exist [statement:"SELECT id from druid_rules where datasource=:dataSource", located:"SELECT id from druid_rules where datasource=:dataSource", rewritte
+n:"SELECT id from druid_rules where datasource=?", arguments:{ positional:{}, named:{dataSource:'_default'}, finder:[]}]
+        at org.skife.jdbi.v2.DBI.withHandle(DBI.java:284) ~[jdbi-2.63.1.jar:2.63.1]
+        at io.druid.metadata.SQLMetadataRuleManager.createDefaultRule(SQLMetadataRuleManager.java:83) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataRuleManagerProvider$1.start(SQLMetadataRuleManagerProvider.java:72) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.java.util.common.lifecycle.Lifecycle.start(Lifecycle.java:263) ~[java-util-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.guice.LifecycleModule$2.start(LifecycleModule.java:156) ~[druid-api-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.cli.GuiceRunnable.initLifecycle(GuiceRunnable.java:103) [druid-services-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.cli.ServerRunnable.run(ServerRunnable.java:41) [druid-services-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.cli.Main.main(Main.java:108) [druid-services-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+Caused by: org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException: com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Table 'druid.druid_rules' doesn't exist [statement:"SELECT id from druid_rules where datasource=:dataSource", located:"SELECT id from druid_rules where datasource=:dataSource", rewritten:"SELECT id from druid_rules where datasource=?", arguments:{ positional:{}, named:{dataSource:'_default'}, finder:[]}]
+        at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1334) ~[jdbi-2.63.1.jar:2.63.1]
+        at org.skife.jdbi.v2.Query.fold(Query.java:173) ~[jdbi-2.63.1.jar:2.63.1]
+        at org.skife.jdbi.v2.Query.list(Query.java:82) ~[jdbi-2.63.1.jar:2.63.1]
+        at org.skife.jdbi.v2.Query.list(Query.java:75) ~[jdbi-2.63.1.jar:2.63.1]
+        at io.druid.metadata.SQLMetadataRuleManager$1.withHandle(SQLMetadataRuleManager.java:97) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataRuleManager$1.withHandle(SQLMetadataRuleManager.java:85) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at org.skife.jdbi.v2.DBI.withHandle(DBI.java:281) ~[jdbi-2.63.1.jar:2.63.1]
+        ... 7 more
+Caused by: com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Table 'druid.druid_rules' doesn't exist
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) ~[?:1.8.0_112]
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) ~[?:1.8.0_112]
+        at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[?:1.8.0_112]
+        at java.lang.reflect.Constructor.newInstance(Constructor.java:423) ~[?:1.8.0_112]
+        at com.mysql.jdbc.Util.handleNewInstance(Util.java:411) ~[?:?]
+        at com.mysql.jdbc.Util.getInstance(Util.java:386) ~[?:?]
+```
+
+This happens when the encoding is not UTF8
+
+```java
+Manager.start()] on object[io.druid.metadata.SQLMetadataSupervisorManager@1f4f0fcc].
+2017-10-26T03:58:24,826 WARN [main] io.druid.metadata.SQLMetadataConnector - Exception creating table
+org.skife.jdbi.v2.exceptions.CallbackFailedException: io.druid.java.util.common.ISE: Database default character set is not UTF-8.
+  Druid requires its MySQL database to be created using UTF-8 as default character set.
+        at org.skife.jdbi.v2.DBI.withHandle(DBI.java:284) ~[jdbi-2.63.1.jar:2.63.1]
+        at io.druid.metadata.SQLMetadataConnector$2.call(SQLMetadataConnector.java:130) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.java.util.common.RetryUtils.retry(RetryUtils.java:63) ~[java-util-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.java.util.common.RetryUtils.retry(RetryUtils.java:81) ~[java-util-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataConnector.retryWithHandle(SQLMetadataConnector.java:134) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataConnector.retryWithHandle(SQLMetadataConnector.java:143) ~[druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataConnector.createTable(SQLMetadataConnector.java:184) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataConnector.createSupervisorsTable(SQLMetadataConnector.java:379) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataConnector.createSupervisorsTable(SQLMetadataConnector.java:504) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.metadata.SQLMetadataSupervisorManager.start(SQLMetadataSupervisorManager.java:79) [druid-server-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_112]
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_112]
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_112]
+        at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_112]
+        at io.druid.java.util.common.lifecycle.Lifecycle$AnnotationBasedHandler.start(Lifecycle.java:364) [java-util-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.java.util.common.lifecycle.Lifecycle.start(Lifecycle.java:263) [java-util-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.guice.LifecycleModule$2.start(LifecycleModule.java:156) [druid-api-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.cli.GuiceRunnable.initLifecycle(GuiceRunnable.java:103) [druid-services-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.cli.ServerRunnable.run(ServerRunnable.java:41) [druid-services-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+        at io.druid.cli.Main.main(Main.java:108) [druid-services-0.10.1.2.6.3.0-220.jar:0.10.1.2.6.3.0-220]
+```
+### ZK issue
+Caution ambari does show that druid nodes are up and running even if ZK is down.
+
+```java
+        at org.apache.zookeeper.ClientCnxn$SendThread.run(ClientCnxn.java:1125) [zookeeper-3.4.6.2.6.3.0-220.jar:3.4.6-220--1]
+2017-10-25T23:22:07,116 WARN [main-SendThread(ctr-e134-1499953498516-247377-01-000004.hwx.site:2182)] org.apache.zookeeper.ClientCnxn - Session 0x0 for server null, unexpected error, closing socket connection and attempting reconnect
+java.net.ConnectException: Connection refused
+        at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method) ~[?:1.8.0_112]
+        at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:717) ~[?:1.8.0_112]
+        at org.apache.zookeeper.ClientCnxnSocketNIO.doTransport(ClientCnxnSocketNIO.java:361) ~[zookeeper-3.4.6.2.6.3.0-220.jar:3.4.6-220--1]
+        at org.apache.zookeeper.ClientCnxn$SendThread.run(ClientCnxn.java:1125) [zookeeper-3.4.6.2.6.3.0-220.jar:3.4.6-220--1]
+2017-10-25T23:22:07,217 WARN [main-SendThread(ctr-e134-1499953498516-247377-01-000002.hwx.site:2182)] org.apache.zookeeper.ClientCnxn - Session 0x0 for server null, unexpected error, closing socket connection and attempting reconnect
+```
+
 
 to kill yarn app
 yarn application -kill  application_1508802793765_0005
@@ -380,3 +664,6 @@ transfer wikiticker-2015-09-12-sampled.json.gz
 
 cd /Users/sbouguerra/Ydev/druid/qtl_tests
 transfer index_task_hdfs.json
+
+
+CREATE DATABASE druid DEFAULT CHARACTER SET utf8;
